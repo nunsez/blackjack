@@ -1,0 +1,50 @@
+{
+  "name": "Codespace",
+
+  "dockerComposeFile": [
+    "./compose.yml"
+  ],
+
+  "service": "codespace",
+
+  "workspaceFolder": "/app",
+  "shutdownAction": "stopCompose",
+  "overrideCommand": true,
+
+  "remoteUser": "dev",
+  "updateRemoteUserUID": true,
+
+	"features": {},
+
+  "customizations": {
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "jakebecker.elixir-ls",
+        "pantajoe.vscode-elixir-credo",
+        "kaiwood.endwise",
+        "phoenixframework.phoenix",
+        "editorconfig.editorconfig",
+        "oderwat.indent-rainbow",
+        "eamodio.gitlens",
+        "github.vscode-github-actions",
+        "redhat.vscode-xml",
+        "ms-azuretools.vscode-docker"
+      ],
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.defaultFormatter": "EditorConfig.EditorConfig",
+        "indentRainbow.colorOnWhiteSpaceOnly": true,
+        "indentRainbow.ignoreErrorLanguages": [
+          "markdown",
+          "elixir"
+        ],
+        "elixirLS.suggestSpecs": false,
+        "[elixir]": {
+          "editor.defaultFormatter": "JakeBecker.elixir-ls"
+        }
+      }
+    }
+  }
+}

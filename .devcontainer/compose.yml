@@ -1,0 +1,20 @@
+---
+name: "devcontainer"
+
+services:
+  codespace:
+    build:
+      context: "../"
+      dockerfile: "./docker/dev/Dockerfile"
+      args:
+        - "ELIXIR_VERSION=1.16.0"
+        - "USER_UID=${USER_UID:-1000}"
+    command: "sleep infinity"
+    tty: true
+    stdin_open: true
+    volumes:
+      - type: "bind"
+        source: "../"
+        target: "/app"
+        read_only: false
+...
