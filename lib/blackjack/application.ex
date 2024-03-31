@@ -10,6 +10,7 @@ defmodule Blackjack.Application do
     children = [
       # Starts a worker by calling: Blackjack.Worker.start_link(arg)
       # {Blackjack.Worker, arg}
+      Blackjack.RoundServer.child_spec()
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
