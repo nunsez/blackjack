@@ -41,10 +41,7 @@
           "markdown",
           "elixir"
         ],
-        "elixirLS.suggestSpecs": false,
-        "[elixir]": {
-          "editor.defaultFormatter": "JakeBecker.elixir-ls"
-        }
+        "elixirLS.suggestSpecs": false
       }
     }
   }
