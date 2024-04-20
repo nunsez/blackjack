@@ -5,11 +5,7 @@ defmodule Blackjack.RoundServer do
 
   use GenServer
 
-  alias Blackjack.PlayerNotifier
   alias Blackjack.Round
-  alias Blackjack.RoundServer
-
-  @rounds_supervisor Blackjack.RoundsSup
 
   @type id() :: any()
   @type callback_arg() :: [any()]
@@ -18,44 +14,6 @@ defmodule Blackjack.RoundServer do
           callback_mod: module(),
           callback_arg: callback_arg()
         }
-
-  @spec child_spec(init_arg :: any()) :: Supervisor.child_spec()
-
-  def child_spec(_init_arg \\ []) do
-    DynamicSupervisor.child_spec(name: @rounds_supervisor)
-  end
-
-  @spec start_round_supervisor(round_id :: RoundServer.id(), players :: [RoundServer.player()]) ::
-          any()
-
-  def start_round_supervisor(round_id, players) do
-    round_server_spec = %{
-      id: __MODULE__,
-      start: {__MODULE__, :start_link, [round_id, players]},
-      type: :worker
-    }
-
-    children = [
-      round_server_spec,
-      PlayerNotifier.child_spec(round_id, players)
-    ]
-
-    opts = [strategy: :one_for_all]
-
-    Supervisor.start_link(children, opts)
-  end
-
-  @spec start_playing(round_id :: id(), players :: [player()]) :: Supervisor.on_start_child()
-
-  def start_playing(round_id, players) do
-    child_spec = %{
-      id: __MODULE__,
-      start: {__MODULE__, :start_round_supervisor, [round_id, players]},
-      type: :supervisor
-    }
-
-    DynamicSupervisor.start_child(@rounds_supervisor, child_spec)
-  end
 
   @spec move(round_id :: id(), player_id :: Round.player_id(), move :: Round.move_type()) :: any()
 
@@ -72,7 +30,8 @@ defmodule Blackjack.RoundServer do
 
   def start_link(round_id, players) do
     player_ids = Enum.map(players, fn player -> player.id end)
-    GenServer.start_link(__MODULE__, {round_id, player_ids}, name: round_id)
+
+    GenServer.start_link(__MODULE__, {round_id, player_ids}, name: service_name(round_id)) |> dbg
   end
 
   @impl GenServer
@@ -106,5 +65,9 @@ defmodule Blackjack.RoundServer do
   defp handle_instruction(instruction, state) do
     {:notify_player, _player_id, _player_instruction} = instruction
     state
+  end
+
+  defp service_name(round_id) do
+    Blackjack.service_name({__MODULE__, round_id})
   end
 end

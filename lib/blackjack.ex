@@ -3,16 +3,7 @@ defmodule Blackjack do
   Documentation for `Blackjack`.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Blackjack.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def service_name(service_id) do
+    {:via, Registry, {Blackjack.Registry, service_id}}
   end
 end

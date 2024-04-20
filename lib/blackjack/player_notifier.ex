@@ -8,6 +8,12 @@ defmodule Blackjack.PlayerNotifier do
   alias Blackjack.Round
   alias Blackjack.RoundServer
 
+  @callback deal_card(RoundServer.id(), Round.player_id(), Blackjack.Deck.card()) :: any()
+  @callback move(RoundServer.id(), Round.player_id()) :: any()
+  @callback busted(RoundServer.id(), Round.player_id()) :: any()
+  @callback winners(RoundServer.id(), Round.player_id(), [Round.player_id()]) :: any()
+  @callback unauthorized_move(RoundServer.id(), Round.player_id()) :: any()
+
   @spec child_spec(round_id :: RoundServer.id(), players :: [RoundServer.player()]) ::
           Supervisor.child_spec()
 
@@ -21,9 +27,10 @@ defmodule Blackjack.PlayerNotifier do
         }
       end)
 
+    opts = [strategy: :one_for_one, name: __MODULE__]
     %{
       id: __MODULE__,
-      start: {__MODULE__, :start_link, [children, strategy: :one_for_one]},
+      start: {Supervisor, :start_link, [children, opts]},
       type: :supervisor
     }
   end
@@ -38,10 +45,11 @@ defmodule Blackjack.PlayerNotifier do
     GenServer.cast({round_id, player_id}, {:notify, player_instruction})
   end
 
-  @spec start_link(round_id :: RoundServer.id(), player :: RoundServer.player()) :: GenServer.on_start()
+  @spec start_link(round_id :: RoundServer.id(), player :: RoundServer.player()) ::
+          GenServer.on_start()
 
   def start_link(round_id, player) do
-    GenServer.start_link(__MODULE__, {round_id, player}, name: {round_id, player.id})
+    GenServer.start_link(__MODULE__, {round_id, player}, name: service_name(round_id, player.id)) |> dbg
   end
 
   @impl GenServer
@@ -67,4 +75,8 @@ defmodule Blackjack.PlayerNotifier do
   defp decode_instruction(:busted), do: {:busted, []}
   defp decode_instruction(:unauthorized_move), do: {:unauthorized_move, []}
   defp decode_instruction({:winners, player_ids}), do: {:winners, [player_ids]}
+
+  defp service_name(round_id, player_id) do
+    Blackjack.service_name({__MODULE__, round_id, player_id})
+  end
 end
