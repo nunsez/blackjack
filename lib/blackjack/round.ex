@@ -162,7 +162,7 @@ defmodule Blackjack.Round do
 
   defp winners(%Round{} = round) do
     max_score =
-      Enum.max_by(round.successful_hands, fn hand_data -> hand_data.hand.score end).hand_data.score
+      Enum.max_by(round.successful_hands, fn hand_data -> hand_data.hand.score end).hand.score
 
     round.successful_hands
     |> Stream.filter(fn hand_data -> hand_data.hand.score == max_score end)

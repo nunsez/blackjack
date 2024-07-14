@@ -27,9 +27,10 @@ defmodule Blackjack.PlayerNotifier do
         }
       end)
 
-    opts = [strategy: :one_for_one, name: __MODULE__]
+    supervisor_name = Blackjack.service_name({__MODULE__, round_id})
+    opts = [strategy: :one_for_one, name: supervisor_name]
     %{
-      id: __MODULE__,
+      id: {__MODULE__, round_id},
       start: {Supervisor, :start_link, [children, opts]},
       type: :supervisor
     }
@@ -42,14 +43,14 @@ defmodule Blackjack.PlayerNotifier do
         ) :: :ok
 
   def publish(round_id, player_id, player_instruction) do
-    GenServer.cast({round_id, player_id}, {:notify, player_instruction})
+    GenServer.cast(service_name(round_id, player_id), {:notify, player_instruction})
   end
 
   @spec start_link(round_id :: RoundServer.id(), player :: RoundServer.player()) ::
           GenServer.on_start()
 
   def start_link(round_id, player) do
-    GenServer.start_link(__MODULE__, {round_id, player}, name: service_name(round_id, player.id)) |> dbg
+    GenServer.start_link(__MODULE__, {round_id, player}, name: service_name(round_id, player.id))
   end
 
   @impl GenServer
@@ -62,7 +63,6 @@ defmodule Blackjack.PlayerNotifier do
   def handle_cast({:notify, player_instruction}, state) do
     {fun, args} = decode_instruction(player_instruction)
     all_args = [state.player.callback_arg, state.player.id | args]
-
     apply(state.player.callback_mod, fun, all_args)
 
     {:noreply, state}

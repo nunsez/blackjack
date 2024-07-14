@@ -24,7 +24,7 @@ defmodule Blackjack.RoundsSupervisor do
       type: :supervisor
     }
 
-    DynamicSupervisor.start_child(__MODULE__, child_spec) |> dbg
+    DynamicSupervisor.start_child(__MODULE__, child_spec)
   end
 
   @spec start_round_supervisor(round_id :: RoundServer.id(), players :: [RoundServer.player()]) ::
@@ -38,12 +38,13 @@ defmodule Blackjack.RoundsSupervisor do
     }
 
     children = [
-      round_server_spec,
-      PlayerNotifier.child_spec(round_id, players)
+      PlayerNotifier.child_spec(round_id, players),
+      round_server_spec
     ]
 
-    opts = [strategy: :one_for_all]
+    supervisor_name = Blackjack.service_name({__MODULE__, round_id})
+    opts = [strategy: :one_for_all, name: supervisor_name]
 
-    Supervisor.start_link(children, opts) |> dbg
+    Supervisor.start_link(children, opts)
   end
 end

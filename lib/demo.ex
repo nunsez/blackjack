@@ -19,14 +19,14 @@ defmodule Demo do
   end
 
   defp start_round(round_id, player_ids) do
-    Demo.Autoplayer.Server.start_link(round_id, player_ids) |> dbg()
+    Demo.Autoplayer.Server.start_link(round_id, player_ids)
 
     players =
       Enum.map(player_ids, fn player_id ->
         Demo.Autoplayer.Server.player_spec(round_id, player_id)
       end)
 
-    Blackjack.RoundsSupervisor.start_playing(round_id, players) |> dbg()
+    Blackjack.RoundsSupervisor.start_playing(round_id, players)
   end
 end
 

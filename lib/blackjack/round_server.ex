@@ -5,6 +5,7 @@ defmodule Blackjack.RoundServer do
 
   use GenServer
 
+  alias Blackjack.PlayerNotifier
   alias Blackjack.Round
 
   @type id() :: any()
@@ -18,7 +19,7 @@ defmodule Blackjack.RoundServer do
   @spec move(round_id :: id(), player_id :: Round.player_id(), move :: Round.move_type()) :: any()
 
   def move(round_id, player_id, move) do
-    GenServer.call(round_id, {:move, player_id, move})
+    GenServer.call(service_name(round_id), {:move, player_id, move})
   end
 
   @type state() :: %{
@@ -31,7 +32,7 @@ defmodule Blackjack.RoundServer do
   def start_link(round_id, players) do
     player_ids = Enum.map(players, fn player -> player.id end)
 
-    GenServer.start_link(__MODULE__, {round_id, player_ids}, name: service_name(round_id)) |> dbg
+    GenServer.start_link(__MODULE__, {round_id, player_ids}, name: service_name(round_id))
   end
 
   @impl GenServer
@@ -62,8 +63,8 @@ defmodule Blackjack.RoundServer do
 
   @spec handle_instruction(instruction :: Round.instruction(), state :: state()) :: state()
 
-  defp handle_instruction(instruction, state) do
-    {:notify_player, _player_id, _player_instruction} = instruction
+  defp handle_instruction({:notify_player, player_id, player_instruction}, state) do
+    PlayerNotifier.publish(state.round_id, player_id, player_instruction)
     state
   end
 
